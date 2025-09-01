@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Profile 0x00CD09</title>
+
+<!-- FontAwesome CDN for social icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<style>
+  :root {
+    --color-bg: #0a1a1a;
+    --color-bg-dark: #011414cc;
+    --color-primary: #00ffcc;
+    --color-secondary: #22ffaa;
+    --color-link-hover: #009977;
+    --font-mono: "Fira Mono", monospace;
+    --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  main.card {
+    background: #022222ee;
+    border-radius: 18px;
+    max-width: 480px;
+    padding: 2rem 3rem;
+    box-shadow: 0 0 20px #00ddccaa;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .profile-pic {
+    display: block;
+    margin: 0 auto 1rem auto;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid var(--color-primary);
+    object-fit: cover;
+    box-shadow: 0 0 12px var(--color-secondary);
+  }
+
+  h1.username {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  nav.icons {
+    text-align: center;
+  }
+
+  nav.icons a {
+    color: var(--color-primary);
+    margin: 0 1.2rem;
+    font-size: 1.9rem;
+    transition: color 0.3s ease;
+  }
+
+  nav.icons a:hover,
+  nav.icons a:focus {
+    color: var(--color-link-hover);
+    outline: none;
+  }
+
+  section {
+    line-height: 1.5;
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.6rem;
+    border-bottom: 2px solid var(--color-secondary);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* BIO subdivided */
+  .bio p {
+    margin-bottom: 1rem;
+  }
+
+  .bio-part {
+    margin-bottom: 1.4rem;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  ul li {
+    margin-bottom: 0.6rem;
+    font-size: 1.1rem;
+  }
+
+  ul li strong {
+    color: var(--color-secondary);
+  }
+
+  /* Profile summary container */
+  .profile {
+    background: #011414dd;
+    border: 2px solid var(--color-secondary);
+    border-radius: 14px;
+    padding: 1.6rem 2rem;
+    box-shadow: 0 0 15px var(--color-secondary);
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.3rem;
+  }
+
+  .profile-header h3 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+
+  .status {
+    color: var(--color-secondary);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  /* Time header */
+  header.time-display {
+    position: fixed;
+    top: 1rem;
+    right: 1.5rem;
+    background: var(--color-bg-dark);
+    color: var(--color-secondary);
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    padding: 0.4rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #004040aa;
+    user-select: none;
+    z-index: 99;
+  }
+</style>
+</head>
+<body>
+
+<header class="time-display" aria-live="polite" aria-atomic="true" aria-label="Current time">
+  <time id="currentTime">--:--:--</time>
+</header>
+
+<main class="card" role="main" aria-label="Developer and IT student profile">
+
+  <img src="data:image/jpeg;base64,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"
+       alt="Profile picture Chiyo chan from anime Azumanga Daioh"
+       class="profile-pic"
+       tabindex="0" />
+
+  <h1 class="username" tabindex="0">0x00CD09</h1>
+
+  <nav class="icons" aria-label="Social media links">
+    <a href="https://discord.gg/Y6n7h9uyy8" target="_blank" rel="noopener" aria-label="Discord of 0x00CD09" tabindex="0">
+      <i class="fab fa-discord" aria-hidden="true"></i>
+    </a>
+    <a href="https://open.spotify.com/user/uo36rlftnsnv55zr217p8z0cs?si=2DpK4pb4R0G_wBRAjtuEww" target="_blank" rel="noopener" aria-label="Spotify of 0x00CD09" tabindex="0">
+      <i class="fab fa-spotify" aria-hidden="true"></i>
+    </a>
+    <a href="https://www.root-me.org/0x00CD09" target="_blank" rel="noopener" aria-label="Profile 0x00CD09" tabindex="0">
+      <i class="fas fa-terminal" aria-hidden="true"></i>
+    </a>
+  </nav>
+
+  <section class="bio" tabindex="0" aria-label="Biography">
+    <h2 class="section-title">Biography</h2>
+
+    <div class="bio-part">
+      <p>
+        Passionate about IT and cybersecurity, I am an IT student focused on penetration testing and vulnerability analysis.
+      </p>
+    </div>
+
+    <div class="bio-part">
+      <p>
+        I actively challenge myself with security exercises to sharpen my skills in ethical hacking, reverse engineering, Kernel and web exploitation.
+      </p>
+    </div>
+
+    <div class="bio-part">
+      <p>
+        My goal is to master secure environments and contribute to innovative security projects.
+      </p>
+    </div>
+  </section>
+
+  <section class="skills" tabindex="0" aria-label="Technical Skills">
+    <h2 class="section-title">Technical Skills</h2>
+    <ul>
+      <li><strong>Languages:</strong> Python, Bash, C, C++,  JavaScript, Go, Rust</li>
+      <li><strong>Web:</strong> HTML, CSS, JavaScript, Node.js</li>
+      <li><strong>Security:</strong> Penetration Testing, Web Vulnerabilities, Reverse Engineering, Kernel Exploitation</li>
+      <li><strong>Other:</strong> Malware Analysis, Scripting, Automation</li>
+    </ul>
+  </section>
+
+</main>
+
+<script>
+  // Update the clock every second
+  function updateTime() {
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const timeString = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    document.getElementById('currentTime').textContent = timeString;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+</script>
+
+</body>
+</html>
