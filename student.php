@@ -1,120 +1,85 @@
 
 <?php
-include "db.php";
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-$op = $_GET['op'] ?? 'vis';
+include "db.php";
 $msg = "";
 
-// 🚀 Sett inn noen eksempelklasser (hvis de ikke finnes fra før)
-$conn->query("INSERT INTO klasse (klassekode, klassenavn, studiumkode)
-              VALUES ('IT1', 'IT og ledelse 1. år', 'ITLED'),
-                     ('IT2', 'IT og ledelse 2. år', 'ITLED'),
-                     ('IT3', 'IT og ledelse 3. år', 'ITLED')
-              ON DUPLICATE KEY UPDATE klassenavn=klassenavn");
+$conn->query("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) 
+VALUES ('gb','Geir','Bjarvin','IT1'),
+       ('mrj','Marius','Johannessen','IT1'),
+       ('tb','Tove','Bøe','IT2'),
+       ('ah','Anders','Hansen','IT3')
+ON DUPLICATE KEY UPDATE fornavn=fornavn");
 
-// 🚀 Sett inn noen eksempelstudenter hvis tabellen er tom
-$res = $conn->query("SELECT COUNT(*) AS antall FROM student");
-$row = $res->fetch_assoc();
-if ($row['antall'] == 0) {
-    $conn->query("INSERT INTO student VALUES
-        ('gb', 'Geir', 'Bjarvin', 'IT1'),
-        ('mrj', 'Marius', 'Johannessen', 'IT1'),
-        ('tb', 'Tove', 'Bøe', 'IT2'),
-        ('ah', 'Anders', 'Hansen', 'IT3')
-    ");
-}
-
-// Legg til ny student
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrer'])) {
-    $bruker = $conn->real_escape_string($_POST['bruker']);
-    $fornavn = $conn->real_escape_string($_POST['fornavn']);
-    $etternavn = $conn->real_escape_string($_POST['etternavn']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lagre'])) {
+    $bruker = $conn->real_escape_string(trim($_POST['bruker']));
+    $fornavn = $conn->real_escape_string(trim($_POST['fornavn']));
+    $etternavn = $conn->real_escape_string(trim($_POST['etternavn']));
     $klasse = $conn->real_escape_string($_POST['klasse']);
 
-    $sql = "INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES ('$bruker', '$fornavn', '$etternavn', '$klasse')";
-    if ($conn->query($sql)) {
-        $msg = "Ny student registrert!";
+    if ($bruker && $fornavn && $klasse) {
+        if ($conn->query("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES ('$bruker','$fornavn','$etternavn','$klasse')")) {
+            $msg = "Student lagret.";
+        } else {
+            $msg = "Feil: " . $conn->error;
+        }
     } else {
-        $msg = "Feil: " . $conn->error;
+        $msg = "Fyll inn nødvendige felter.";
     }
 }
 
-// Slett student
 if (isset($_GET['slett'])) {
     $bruker = $conn->real_escape_string($_GET['slett']);
-    if ($conn->query("DELETE FROM student WHERE brukernavn='$bruker'")) {
-        $msg = "Student slettet.";
-    } else {
-        $msg = "Feil ved sletting: " . $conn->error;
-    }
+    if ($conn->query("DELETE FROM student WHERE brukernavn='$bruker'")) $msg = "Student slettet.";
+    else $msg = "Feil: " . $conn->error;
 }
 
-// Hent klasser til nedtrekksmeny
-$klasser = $conn->query("SELECT * FROM klasse ORDER BY klassekode");
-
-// Hent studenter
-$studenter = $conn->query("
-    SELECT s.*, k.klassenavn 
-    FROM student s 
-    LEFT JOIN klasse k ON s.klassekode = k.klassekode
-    ORDER BY s.brukernavn
-");
+$klasser = $conn->query("SELECT klassekode, klassenavn FROM klasse ORDER BY klassekode");
+$studenter = $conn->query("SELECT s.brukernavn, s.fornavn, s.etternavn, s.klassekode, k.klassenavn
+                           FROM student s
+                           LEFT JOIN klasse k ON s.klassekode = k.klassekode
+                           ORDER BY s.brukernavn");
 ?>
+
 <!DOCTYPE html>
-<html lang="no">
-<head>
-  <meta charset="UTF-8">
-  <title>Studenter</title>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Studenter</title></head>
 <body>
-  <h1>Student-modul</h1>
-  <p><a href="index.php">← Tilbake til meny</a></p>
+<h1>Administrer studenter</h1>
+<p><a href="index.php">← Til hovedsiden</a></p>
+<?php if ($msg) echo "<p><strong>$msg</strong></p>"; ?>
 
-  <?php if ($msg): ?>
-    <p><strong><?php echo htmlspecialchars($msg); ?></strong></p>
-  <?php endif; ?>
+<h2>Ny student</h2>
+<form method="post">
+Brukernavn: <br><input type="text" name="bruker" required><br>
+Fornavn: <br><input type="text" name="fornavn" required><br>
+Etternavn: <br><input type="text" name="etternavn"><br>
+Klasse: <br>
+<select name="klasse">
+<?php while($k = $klasser->fetch_assoc()): ?>
+<option value="<?php echo htmlspecialchars($k['klassekode']); ?>">
+<?php echo htmlspecialchars($k['klassekode'].' - '.$k['klassenavn']); ?>
+</option>
+<?php endwhile; ?>
+</select><br><br>
+<input type="submit" name="lagre" value="Lagre">
+</form>
 
-  <?php if ($op === 'registrer'): ?>
-    <h2>Registrer student</h2>
-    <form method="post">
-      Brukernavn: <input type="text" name="bruker" required><br>
-      Fornavn: <input type="text" name="fornavn" required><br>
-      Etternavn: <input type="text" name="etternavn"><br>
-      Klasse: 
-      <select name="klasse">
-        <?php while ($k = $klasser->fetch_assoc()): ?>
-          <option value="<?php echo $k['klassekode']; ?>">
-            <?php echo $k['klassekode'] . " - " . $k['klassenavn']; ?>
-          </option>
-        <?php endwhile; ?>
-      </select><br>
-      <input type="submit" name="registrer" value="Lagre">
-    </form>
-
-  <?php elseif ($op === 'vis'): ?>
-    <h2>Alle studenter</h2>
-    <table border="1" cellpadding="5">
-      <tr><th>Brukernavn</th><th>Navn</th><th>Klasse</th></tr>
-      <?php while ($s = $studenter->fetch_assoc()): ?>
-        <tr>
-          <td><?php echo $s['brukernavn']; ?></td>
-          <td><?php echo $s['fornavn'] . " " . $s['etternavn']; ?></td>
-          <td><?php echo $s['klassekode'] . " - " . $s['klassenavn']; ?></td>
-        </tr>
-      <?php endwhile; ?>
-    </table>
-
-  <?php elseif ($op === 'slett'): ?>
-    <h2>Slett student</h2>
-    <ul>
-      <?php $studenter->data_seek(0); while ($s = $studenter->fetch_assoc()): ?>
-        <li>
-          <?php echo $s['brukernavn'] . " - " . $s['fornavn'] . " " . $s['etternavn']; ?>
-          [<a href="?slett=<?php echo urlencode($s['brukernavn']); ?>" onclick="return confirm('Slette denne studenten?')">Slett</a>]
-        </li>
-      <?php endwhile; ?>
-    </ul>
-  <?php endif; ?>
-
+<h2>Alle studenter</h2>
+<table border="1" cellpadding="4" cellspacing="0">
+<tr><th>Brukernavn</th><th>Fornavn</th><th>Etternavn</th><th>Klasse</th><th>Slett</th></tr>
+<?php while($r = $studenter->fetch_assoc()): ?>
+<tr>
+<td><?php echo htmlspecialchars($r['brukernavn']); ?></td>
+<td><?php echo htmlspecialchars($r['fornavn']); ?></td>
+<td><?php echo htmlspecialchars($r['etternavn']); ?></td>
+<td><?php echo htmlspecialchars($r['klassekode'].' '.$r['klassenavn']); ?></td>
+<td><a href="?slett=<?php echo urlencode($r['brukernavn']); ?>" onclick="return confirm('Slette denne?')">Slett</a></td>
+</tr>
+<?php endwhile; ?>
+</table>
 </body>
 </html>
