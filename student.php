@@ -1,81 +1,94 @@
 <?php
 include "db.php";
+
+$op = $_GET['op'] ?? 'vis';
 $msg = "";
 
-// Legg til student
-if(isset($_POST['lagre'])){
+// Registrer student
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrer'])) {
     $bruker = $conn->real_escape_string($_POST['bruker']);
     $fornavn = $conn->real_escape_string($_POST['fornavn']);
     $etternavn = $conn->real_escape_string($_POST['etternavn']);
     $klasse = $conn->real_escape_string($_POST['klasse']);
 
-    if($bruker == "" || $fornavn == ""){
-        $msg = "Fyll inn brukernavn og fornavn.";
+    $sql = "INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES ('$bruker', '$fornavn', '$etternavn', '$klasse')";
+    if ($conn->query($sql)) {
+        $msg = "Ny student registrert!";
     } else {
-        $sql = "INSERT INTO student (brukernavn, fornavn, etternavn, klassekode)
-                VALUES ('$bruker', '$fornavn', '$etternavn', '$klasse')";
-        if($conn->query($sql)) $msg = "Student lagret!";
-        else $msg = "Feil: " . $conn->error;
+        $msg = "Feil: " . $conn->error;
     }
 }
 
 // Slett student
-if(isset($_GET['slett'])){
+if (isset($_GET['slett'])) {
     $bruker = $conn->real_escape_string($_GET['slett']);
-    if($conn->query("DELETE FROM student WHERE brukernavn='$bruker'"))
-        $msg = "Student slettet!";
-    else
+    if ($conn->query("DELETE FROM student WHERE brukernavn='$bruker'")) {
+        $msg = "Student slettet.";
+    } else {
         $msg = "Feil ved sletting: " . $conn->error;
+    }
 }
 
-// Hent klasser til listeboks
-$klasser = $conn->query("SELECT klassekode, klasssenavn FROM klasse ORDER BY klassekode");
+// Hent klasser til nedtrekksmeny
+$klasser = $conn->query("SELECT * FROM klasse ORDER BY klassekode");
 
-// Hent alle studenter med klassenavn
+// Hent studenter
 $studenter = $conn->query("
-    SELECT s.brukernavn, s.fornavn, s.etternavn, s.klassekode, k.klasssenavn
-    FROM student s
+    SELECT s.*, k.klassenavn 
+    FROM student s 
     LEFT JOIN klasse k ON s.klassekode = k.klassekode
     ORDER BY s.brukernavn
 ");
 ?>
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Studenter</title></head>
+<html lang="no">
+<head><meta charset="UTF-8"><title>Studenter</title></head>
 <body>
-<h1>Administrer studenter</h1>
-<p><a href="index.php">← Til hovedsiden</a></p>
+  <h1>Student-modul</h1>
+  <p><a href="index.php">Tilbake til meny</a></p>
 
-<?php if($msg != "") echo "<p><strong>$msg</strong></p>"; ?>
+  <?php if ($msg): ?>
+    <p><strong><?php echo htmlspecialchars($msg); ?></strong></p>
+  <?php endif; ?>
 
-<h2>Ny student</h2>
-<form method="post">
-Brukernavn:<br><input type="text" name="bruker" required><br>
-Fornavn:<br><input type="text" name="fornavn" required><br>
-Etternavn:<br><input type="text" name="etternavn"><br>
-Klasse:<br>
-<select name="klasse">
-<?php while($k = $klasser->fetch_assoc()): ?>
-    <option value="<?php echo $k['klassekode']; ?>">
-        <?php echo $k['klassekode'] . " - " . $k['klasssenavn']; ?>
-    </option>
-<?php endwhile; ?>
-</select><br><br>
-<input type="submit" name="lagre" value="Lagre">
-</form>
-
-<h2>Alle studenter</h2>
-<table border="1" cellpadding="4">
-<tr><th>Brukernavn</th><th>Fornavn</th><th>Etternavn</th><th>Klasse</th><th>Slett</th></tr>
-<?php while($r = $studenter->fetch_assoc()): ?>
-<tr>
-<td><?php echo $r['brukernavn']; ?></td>
-<td><?php echo $r['fornavn']; ?></td>
-<td><?php echo $r['etternavn']; ?></td>
-<td><?php echo $r['klassekode'] . " " . $r['klasssenavn']; ?></td>
-<td><a href="?slett=<?php echo $r['brukernavn']; ?>" onclick="return confirm('Slette?')">Slett</a></td>
-</tr>
-<?php endwhile; ?>
-</table>
+  <?php if ($op === 'registrer'): ?>
+    <h2>Registrer student</h2>
+    <form method="post">
+      Brukernavn: <input type="text" name="bruker" required><br>
+      Fornavn: <input type="text" name="fornavn" required><br>
+      Etternavn: <input type="text" name="etternavn"><br>
+      Klasse: 
+      <select name="klasse">
+        <?php while ($k = $klasser->fetch_assoc()): ?>
+          <option value="<?php echo $k['klassekode']; ?>">
+            <?php echo $k['klassekode'] . " - " . $k['klassenavn']; ?>
+          </option>
+        <?php endwhile; ?>
+      </select><br>
+      <input type="submit" name="registrer" value="Lagre">
+    </form>
+  <?php elseif ($op === 'vis'): ?>
+    <h2>Alle studenter</h2>
+    <table border="1" cellpadding="5">
+      <tr><th>Brukernavn</th><th>Navn</th><th>Klasse</th></tr>
+      <?php while ($s = $studenter->fetch_assoc()): ?>
+        <tr>
+          <td><?php echo $s['brukernavn']; ?></td>
+          <td><?php echo $s['fornavn'] . " " . $s['etternavn']; ?></td>
+          <td><?php echo $s['klassekode'] . " - " . $s['klassenavn']; ?></td>
+        </tr>
+      <?php endwhile; ?>
+    </table>
+  <?php elseif ($op === 'slett'): ?>
+    <h2>Slett student</h2>
+    <ul>
+      <?php $studenter->data_seek(0); while ($s = $studenter->fetch_assoc()): ?>
+        <li>
+          <?php echo $s['brukernavn'] . " - " . $s['fornavn'] . " " . $s['etternavn']; ?>
+          [<a href="?slett=<?php echo urlencode($s['brukernavn']); ?>" onclick="return confirm('Slette denne studenten?')">Slett</a>]
+        </li>
+      <?php endwhile; ?>
+    </ul>
+  <?php endif; ?>
 </body>
 </html>

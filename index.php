@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="no">
 <head>
-  <meta charset="utf-8">
-  <title>Hovedside</title>
+  <meta charset="UTF-8">
+  <title>Brukerfunksjoner</title>
 </head>
 <body>
-  <h1>Velkommen! Velg hva du vil gjøre:</h1>
+  <h1>Brukerfunksjoner</h1>
   <ul>
-    <li><a href="klasse.php">Administrer klasser</a></li>
-    <li><a href="student.php">Administrer studenter</a></li>
+    <li><a href="klasse.php?op=registrer">Registrer klasse</a></li>
+    <li><a href="klasse.php?op=vis">Vis alle klasser</a></li>
+    <li><a href="klasse.php?op=slett">Slett klasse</a></li>
+    <li><a href="student.php?op=registrer">Registrer student</a></li>
+    <li><a href="student.php?op=vis">Vis alle studenter</a></li>
+    <li><a href="student.php?op=slett">Slett student</a></li>
   </ul>
 </body>
 </html>
