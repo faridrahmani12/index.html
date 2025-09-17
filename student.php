@@ -92,3 +92,27 @@ $studenter = $conn->query("
   <?php endif; ?>
 </body>
 </html>
+<?php
+include "db.php";
+
+$op = $_GET['op'] ?? 'vis';
+$msg = "";
+
+
+$conn->query("INSERT INTO klasse (klassekode, klassenavn, studiumkode)
+              VALUES ('IT1', 'IT og ledelse 1. år', 'ITLED'),
+                     ('IT2', 'IT og ledelse 2. år', 'ITLED'),
+                     ('IT3', 'IT og ledelse 3. år', 'ITLED')
+              ON DUPLICATE KEY UPDATE klassenavn=klassenavn");
+
+// 🚀 Sett inn noen eksempelstudenter hvis tabellen er tom
+$res = $conn->query("SELECT COUNT(*) AS antall FROM student");
+$row = $res->fetch_assoc();
+if ($row['antall'] == 0) {
+    $conn->query("INSERT INTO student VALUES
+        ('gb', 'Geir', 'Bjarvin', 'IT1'),
+        ('mrj', 'Marius', 'Johannessen', 'IT1'),
+        ('tb', 'Tove', 'Bøe', 'IT2'),
+        ('ah', 'Anders', 'Hansen', 'IT3')
+    ");
+}
