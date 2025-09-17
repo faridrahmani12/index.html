@@ -2,10 +2,11 @@
 // Sjekk om vi kjører lokalt eller på Dokploy
 if (php_sapi_name() == "cli-server" || $_SERVER['SERVER_NAME'] == "localhost") {
     // Lokal utvikling (XAMPP/MAMP)
-    $host = "127.0.0.1";
-    $user = "root";
-    $pass = "";
-    $db   = "skole";
+   $host = "mysql123.dokploy.no";      // Dokploy host
+$user = "app123_user";               // Dokploy databasebruker
+$pass = "abc123";                    // Dokploy passord
+$db   = "skole";                     // databasenavn på Dokploy
+
 } else {
     // Dokploy – bytt ut med info fra Dokploy databasen din
     $host = "DOKPLOY_HOST";      // f.eks. usn-db.example.com
