@@ -1,7 +1,8 @@
 <?php
 include "db.php";
 
-$op = $_GET['op'] ?? 'vis';
+$allowed_ops = ['vis', 'registrer', 'slett'];
+$op = isset($_GET['op']) && in_array($_GET['op'], $allowed_ops) ? $_GET['op'] : 'vis';
 $msg = "";
 
 // Registrer student
