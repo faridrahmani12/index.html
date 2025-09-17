@@ -1,11 +1,29 @@
 <?php
 include "db.php";
 
-$allowed_ops = ['vis', 'registrer', 'slett'];
-$op = isset($_GET['op']) && in_array($_GET['op'], $allowed_ops) ? $_GET['op'] : 'vis';
+$op = $_GET['op'] ?? 'vis';
 $msg = "";
 
-// Registrer student
+// 🚀 Sett inn noen eksempelklasser (hvis de ikke finnes fra før)
+$conn->query("INSERT INTO klasse (klassekode, klassenavn, studiumkode)
+              VALUES ('IT1', 'IT og ledelse 1. år', 'ITLED'),
+                     ('IT2', 'IT og ledelse 2. år', 'ITLED'),
+                     ('IT3', 'IT og ledelse 3. år', 'ITLED')
+              ON DUPLICATE KEY UPDATE klassenavn=klassenavn");
+
+// 🚀 Sett inn noen eksempelstudenter hvis tabellen er tom
+$res = $conn->query("SELECT COUNT(*) AS antall FROM student");
+$row = $res->fetch_assoc();
+if ($row['antall'] == 0) {
+    $conn->query("INSERT INTO student VALUES
+        ('gb', 'Geir', 'Bjarvin', 'IT1'),
+        ('mrj', 'Marius', 'Johannessen', 'IT1'),
+        ('tb', 'Tove', 'Bøe', 'IT2'),
+        ('ah', 'Anders', 'Hansen', 'IT3')
+    ");
+}
+
+// Legg til ny student
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrer'])) {
     $bruker = $conn->real_escape_string($_POST['bruker']);
     $fornavn = $conn->real_escape_string($_POST['fornavn']);
@@ -43,10 +61,13 @@ $studenter = $conn->query("
 ?>
 <!DOCTYPE html>
 <html lang="no">
-<head><meta charset="UTF-8"><title>Studenter</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Studenter</title>
+</head>
 <body>
   <h1>Student-modul</h1>
-  <p><a href="index.php">Tilbake til meny</a></p>
+  <p><a href="index.php">← Tilbake til meny</a></p>
 
   <?php if ($msg): ?>
     <p><strong><?php echo htmlspecialchars($msg); ?></strong></p>
@@ -68,6 +89,7 @@ $studenter = $conn->query("
       </select><br>
       <input type="submit" name="registrer" value="Lagre">
     </form>
+
   <?php elseif ($op === 'vis'): ?>
     <h2>Alle studenter</h2>
     <table border="1" cellpadding="5">
@@ -80,6 +102,7 @@ $studenter = $conn->query("
         </tr>
       <?php endwhile; ?>
     </table>
+
   <?php elseif ($op === 'slett'): ?>
     <h2>Slett student</h2>
     <ul>
@@ -91,29 +114,6 @@ $studenter = $conn->query("
       <?php endwhile; ?>
     </ul>
   <?php endif; ?>
+
 </body>
 </html>
-<?php
-include "db.php";
-
-$op = $_GET['op'] ?? 'vis';
-$msg = "";
-
-
-$conn->query("INSERT INTO klasse (klassekode, klassenavn, studiumkode)
-              VALUES ('IT1', 'IT og ledelse 1. år', 'ITLED'),
-                     ('IT2', 'IT og ledelse 2. år', 'ITLED'),
-                     ('IT3', 'IT og ledelse 3. år', 'ITLED')
-              ON DUPLICATE KEY UPDATE klassenavn=klassenavn");
-
-// 🚀 Sett inn noen eksempelstudenter hvis tabellen er tom
-$res = $conn->query("SELECT COUNT(*) AS antall FROM student");
-$row = $res->fetch_assoc();
-if ($row['antall'] == 0) {
-    $conn->query("INSERT INTO student VALUES
-        ('gb', 'Geir', 'Bjarvin', 'IT1'),
-        ('mrj', 'Marius', 'Johannessen', 'IT1'),
-        ('tb', 'Tove', 'Bøe', 'IT2'),
-        ('ah', 'Anders', 'Hansen', 'IT3')
-    ");
-}
