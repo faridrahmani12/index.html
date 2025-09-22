@@ -73,4 +73,4 @@ Studiumkode: <br><input type="text" name="studium" required><br><br>
 </table>
 </body>
 </html>
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
