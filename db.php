@@ -9,24 +9,42 @@ if (!extension_loaded('mysqli')) {
     exit;
 }
 
-$hostEnv = getenv('DB_HOST');
-$user = getenv('DB_USER') ?: 'farah6535';
-$pass = getenv('DB_PASS') ?: 'a999farah6535';
-$db   = getenv('DB_NAME') ?: 'farah6535';
+mysqli_report(MYSQLI_REPORT_OFF);
+
+$hostEnv       = trim((string) getenv('DB_HOST')) ?: null;
+$dokployEnv    = trim((string) getenv('DOKPLOY_HOST')) ?: null;
+$user          = getenv('DB_USER') ?: 'farah6535';
+$pass          = getenv('DB_PASS') ?: 'a999farah6535';
+$db            = getenv('DB_NAME') ?: 'farah6535';
+
+if ($hostEnv && strtoupper($hostEnv) === 'DOKPLOY_HOST' && $dokployEnv) {
+    $hostEnv = $dokployEnv;
+}
 
 $hostCandidates = array_unique(array_filter([
     $hostEnv,
+    $dokployEnv,
     'localhost',
     '127.0.0.1',
     'mysql',
     'mariadb',
+    'db',
+    'database',
+    'dokploy-db',
+    'dokploy-mysql',
 ]));
 
 $conn = null;
 $errors = [];
 
 foreach ($hostCandidates as $host) {
-    $tmp = @new mysqli($host, $user, $pass, $db);
+    try {
+        $tmp = @new mysqli($host, $user, $pass, $db);
+    } catch (mysqli_sql_exception $exception) {
+        $errors[$host] = $exception->getMessage();
+        continue;
+    }
+
     if ($tmp->connect_errno) {
         $errors[$host] = $tmp->connect_error;
         $tmp->close();
