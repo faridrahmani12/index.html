@@ -1,28 +1,58 @@
 <?php
-// Sjekk om vi kjører lokalt eller på Dokploy
-if (php_sapi_name() == "cli-server" || $_SERVER['SERVER_NAME'] == "localhost") {
-    // Lokal utvikling (XAMPP/MAMP)
-   $host = "mysql123.dokploy.no";      // Dokploy host
-$user = "app123_user";               // Dokploy databasebruker
-$pass = "abc123";                    // Dokploy passord
-$db   = "skole";                     // databasenavn på Dokploy
+// Enkel databasekobling for både lokal utvikling og Dokploy.
+// Lokalt kan du sette dine egne verdier i miljøvariablene DB_HOST, DB_USER, DB_PASS og DB_NAME,
+// eller bruke standardverdiene under.
 
-} else {
-    // Dokploy – bytt ut med info fra Dokploy databasen din
-    $host = "DOKPLOY_HOST";      // f.eks. usn-db.example.com
-    $user = "DOKPLOY_USER";      // brukernavn Dokploy gir deg
-    $pass = "DOKPLOY_PASSWORD";  // passord Dokploy gir deg
-    $db   = "skole";             // databasen du opprettet på Dokploy
+if (!extension_loaded('mysqli')) {
+    http_response_code(500);
+    echo 'MySQLi-utvidelsen er ikke tilgjengelig på serveren. Be administratoren aktivere den.';
+    exit;
 }
 
-// Opprett MySQL-tilkobling
-$conn = new mysqli($host, $user, $pass, $db);
+$hostEnv = getenv('DB_HOST');
+$user = getenv('DB_USER') ?: 'farah6535';
+$pass = getenv('DB_PASS') ?: 'a999farah6535';
+$db   = getenv('DB_NAME') ?: 'farah6535';
 
-// Sjekk tilkobling
-if ($conn->connect_error) {
-    die("Feil ved tilkobling: " . $conn->connect_error);
+$hostCandidates = array_unique(array_filter([
+    $hostEnv,
+    'localhost',
+    '127.0.0.1',
+    'mysql',
+    'mariadb',
+]));
+
+$conn = null;
+$errors = [];
+
+foreach ($hostCandidates as $host) {
+    $tmp = @new mysqli($host, $user, $pass, $db);
+    if ($tmp->connect_errno) {
+        $errors[$host] = $tmp->connect_error;
+        $tmp->close();
+        continue;
+    }
+
+    $conn = $tmp;
+    break;
 }
 
-// Sett tegnsett
-$conn->set_charset("utf8mb4");
+if (!$conn) {
+    http_response_code(500);
+    echo 'Fikk ikke kontakt med databasen. ';    
+    if ($hostEnv) {
+        echo 'Kontroller at verdien i miljøvariabelen DB_HOST stemmer. ';
+    } else {
+        echo 'Forsøk å sette miljøvariabelen DB_HOST til adressen på databasen. ';
+    }
+    if ($errors) {
+        echo 'Feilmeldinger: ';
+        foreach ($errors as $host => $error) {
+            echo htmlspecialchars($host . ': ' . $error) . '\n';
+        }
+    }
+    exit;
+}
+
+$conn->set_charset('utf8mb4');
 ?>
