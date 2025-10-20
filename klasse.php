@@ -6,13 +6,6 @@ error_reporting(E_ALL);
 include "db.php";
 $msg = "";
 
-// Legg inn eksempeldatabaser hvis de ikke finnes
-$conn->query("INSERT INTO klasse (klassekode, klassenavn, studiumkode)
-    VALUES ('IT1', 'IT og ledelse 1. år', 'ITLED'),
-           ('IT2', 'IT og ledelse 2. år', 'ITLED'),
-           ('IT3', 'IT og ledelse 3. år', 'ITLED')
-    ON DUPLICATE KEY UPDATE klassenavn=klassenavn");
-
 // Lagre ny klasse
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lagre'])) {
     $kode = $conn->real_escape_string(trim($_POST['kode']));
