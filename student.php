@@ -7,18 +7,11 @@ error_reporting(E_ALL);
 include "db.php";
 $msg = "";
 
-$conn->query("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) 
-VALUES ('gb','Geir','Bjarvin','IT1'),
-       ('mrj','Marius','Johannessen','IT1'),
-       ('tb','Tove','Bøe','IT2'),
-       ('ah','Anders','Hansen','IT3')
-ON DUPLICATE KEY UPDATE fornavn=fornavn");
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lagre'])) {
     $bruker = $conn->real_escape_string(trim($_POST['bruker']));
     $fornavn = $conn->real_escape_string(trim($_POST['fornavn']));
     $etternavn = $conn->real_escape_string(trim($_POST['etternavn']));
-    $klasse = $conn->real_escape_string($_POST['klasse']);
+    $klasse = isset($_POST['klasse']) ? $conn->real_escape_string($_POST['klasse']) : '';
 
     if ($bruker && $fornavn && $klasse) {
         if ($conn->query("INSERT INTO student (brukernavn, fornavn, etternavn, klassekode) VALUES ('$bruker','$fornavn','$etternavn','$klasse')")) {
@@ -42,6 +35,7 @@ $studenter = $conn->query("SELECT s.brukernavn, s.fornavn, s.etternavn, s.klasse
                            FROM student s
                            LEFT JOIN klasse k ON s.klassekode = k.klassekode
                            ORDER BY s.brukernavn");
+$harKlasser = $klasser->num_rows > 0;
 ?>
 
 <!DOCTYPE html>
@@ -58,14 +52,18 @@ Brukernavn: <br><input type="text" name="bruker" required><br>
 Fornavn: <br><input type="text" name="fornavn" required><br>
 Etternavn: <br><input type="text" name="etternavn"><br>
 Klasse: <br>
+<?php if ($harKlasser): ?>
 <select name="klasse">
-<?php while($k = $klasser->fetch_assoc()): ?>
+<?php $klasser->data_seek(0); while($k = $klasser->fetch_assoc()): ?>
 <option value="<?php echo htmlspecialchars($k['klassekode']); ?>">
 <?php echo htmlspecialchars($k['klassekode'].' - '.$k['klassenavn']); ?>
 </option>
 <?php endwhile; ?>
 </select><br><br>
 <input type="submit" name="lagre" value="Lagre">
+<?php else: ?>
+<p><em>Ingen klasser er registrert ennå. Registrer en klasse før du legger inn studenter.</em></p>
+<?php endif; ?>
 </form>
 
 <h2>Alle studenter</h2>
